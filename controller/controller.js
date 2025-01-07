@@ -1,5 +1,32 @@
 const db = require("../models/db");
+const getDuaById = async (req, res) => {
+  const catId = req.params.cat_id;
+  const queryDua = `
+    SELECT *
+    FROM dua d
+    JOIN sub_category s ON d.subcat_id = s.subcat_id
+    WHERE d.cat_id = ?
+  `;
 
+  try {
+    const duas = await new Promise((resolve, reject) => {
+      db.all(queryDua, [catId], (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows);
+      });
+    });
+
+    if (duas.length > 0) {
+      return res.json(duas);
+    } else {
+      return res
+        .status(404)
+        .json({ message: "No duas found for the specified category" });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
 
 const getCategories = async (req, res) => {
   const { search } = req.query;
